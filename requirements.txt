@@ -1,1 +1,6 @@
 streamlit
+flask 
+google-generativeai 
+fpdf 
+matplotlib 
+requests
