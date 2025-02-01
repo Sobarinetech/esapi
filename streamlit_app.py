@@ -1,9 +1,13 @@
+from flask import Flask, request, jsonify
+from threading import Thread
 import streamlit as st
 import google.generativeai as genai
 from io import BytesIO
 import json
 import matplotlib.pyplot as plt
 import re
+
+app = Flask(__name__)
 
 # Configure API Key securely from Streamlit's secrets
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -134,7 +138,86 @@ def identify_critical_keywords(text):
     critical_terms = [word for word in text.split() if word.lower() in critical_keywords]
     return critical_terms
 
-# Layout for displaying results
+@app.route('/api/sentiment', methods=['POST'])
+def api_get_sentiment():
+    email_content = request.json.get('email_content', '')
+    sentiment = get_sentiment(email_content)
+    return jsonify({"sentiment": "Positive" if sentiment > 0 else "Negative" if sentiment < 0 else "Neutral", "score": sentiment})
+
+@app.route('/api/grammar_check', methods=['POST'])
+def api_grammar_check():
+    email_content = request.json.get('email_content', '')
+    corrected_text = grammar_check(email_content)
+    return jsonify({"corrected_text": corrected_text})
+
+@app.route('/api/key_phrases', methods=['POST'])
+def api_key_phrases():
+    email_content = request.json.get('email_content', '')
+    key_phrases = extract_key_phrases(email_content)
+    return jsonify({"key_phrases": key_phrases})
+
+@app.route('/api/wordcloud', methods=['POST'])
+def api_wordcloud():
+    email_content = request.json.get('email_content', '')
+    word_counts = generate_wordcloud(email_content)
+    return jsonify({"word_counts": word_counts})
+
+@app.route('/api/export_pdf', methods=['POST'])
+def api_export_pdf():
+    text = request.json.get('text', '')
+    pdf_data = export_pdf(text)
+    return send_file(BytesIO(pdf_data), attachment_filename="analysis.pdf", as_attachment=True, mimetype='application/pdf')
+
+@app.route('/api/actionable_items', methods=['POST'])
+def api_actionable_items():
+    email_content = request.json.get('email_content', '')
+    actions = extract_actionable_items(email_content)
+    return jsonify({"actionable_items": actions})
+
+@app.route('/api/root_cause', methods=['POST'])
+def api_root_cause():
+    email_content = request.json.get('email_content', '')
+    root_cause = detect_root_cause(email_content)
+    return jsonify({"root_cause": root_cause})
+
+@app.route('/api/culprit', methods=['POST'])
+def api_culprit():
+    email_content = request.json.get('email_content', '')
+    culprit = identify_culprit(email_content)
+    return jsonify({"culprit": culprit})
+
+@app.route('/api/trends', methods=['POST'])
+def api_trends():
+    email_content = request.json.get('email_content', '')
+    trends = analyze_trends(email_content)
+    return jsonify({"trends": trends})
+
+@app.route('/api/risk', methods=['POST'])
+def api_risk():
+    email_content = request.json.get('email_content', '')
+    risk = assess_risk(email_content)
+    return jsonify({"risk": risk})
+
+@app.route('/api/severity', methods=['POST'])
+def api_severity():
+    email_content = request.json.get('email_content', '')
+    severity = detect_severity(email_content)
+    return jsonify({"severity": severity})
+
+@app.route('/api/critical_keywords', methods=['POST'])
+def api_critical_keywords():
+    email_content = request.json.get('email_content', '')
+    critical_terms = identify_critical_keywords(email_content)
+    return jsonify({"critical_keywords": critical_terms})
+
+def run_flask():
+    app.run(port=5000)
+
+# Run the Flask server in a separate thread
+flask_thread = Thread(target=run_flask)
+flask_thread.start()
+
+# Layout for displaying results in Streamlit
 if email_content and st.button("Generate Insights"):
     try:
         # Generate AI-like responses (using google.generativeai for content generation)
