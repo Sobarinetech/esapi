@@ -211,7 +211,7 @@ def api_critical_keywords():
     return jsonify({"critical_keywords": critical_terms})
 
 def run_flask():
-    app.run(port=5000)
+    app.run(port=8000)
 
 # Run the Flask server in a separate thread
 flask_thread = Thread(target=run_flask)
